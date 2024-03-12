@@ -145,7 +145,6 @@ from cmlbootstrap import CMLBootstrap
 from pyspark.sql import SparkSession
 import cmlapi
 from src.api import ApiUtility
-from sklearn.metrics import classification_report
 import cml.data_v1 as cmldata
 from utils import IotDataGen
 
@@ -156,7 +155,7 @@ from utils import IotDataGen
 USERNAME = os.environ["PROJECT_OWNER"]
 DBNAME = "LOGISTICS_MLOPS_DEMO"
 STORAGE = "s3a://goes-se-sandbox01"
-CONNECTION_NAME = "go01-aw-dl"
+CONNECTION_NAME = "se-aw-mdl"
 
 # Instantiate BankDataGen class
 dg = IotDataGen(USERNAME, STORAGE, DBNAME, CONNECTION_NAME)
@@ -164,7 +163,7 @@ dg = IotDataGen(USERNAME, STORAGE, DBNAME, CONNECTION_NAME)
 # Create CML Spark Connection
 spark = dg.createSparkConnection()
 
-# Create Banking Transactions DF
+# Create IoT Fleet DF
 df = dg.dataGen(spark).toPandas()
 
 # You can access all models with API V2
@@ -177,7 +176,7 @@ client.list_models(project_id)
 # You can use an APIV2-based utility to access the latest model's metadata. For more, explore the src folder
 apiUtil = ApiUtility()
 
-model_name = "<Your Model Name Here>" # Update model name here
+model_name = "TimeSeriesNearestNeighbor-pauldefusco-2024-03-12" # Update model name here
 
 Model_AccessKey = apiUtil.get_latest_deployment_details(model_name=model_name)["model_access_key"]
 Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]
@@ -188,21 +187,6 @@ model_endpoint = (
     HOST.split("//")[0] + "//modelservice." + HOST.split("//")[1] + "/model"
 )
 
-#df_sample_clean = (
-#    df_sample.replace({"SeniorCitizen": {"1": "Yes", "0": "No"}})
-#    .replace(r"^\s$", np.nan, regex=True)
-#    .dropna()
-#)
-
-# Create an array of model responses.
-response_labels = []
-
-# Run Similation to make 1000 calls to the model with increasing error
-percent_counter = 0
-percent_max = len(df)
-
-record = '{"dataframe_split":{"columns":["age", "credit_card_balance", "bank_account_balance", "mortgage_balance", "sec_bank_account_balance", "savings_account_balance", "sec_savings_account_balance", "total_est_nworth", "primary_loan_balance", "secondary_loan_balance", "uni_loan_balance", "longitude", "latitude", "transaction_amount"],"data":[[35.5, 20000.5, 3900.5, 14000.5, 2944.5, 3400.5, 12000.5, 29000.5, 1300.5, 15000.5, 10000.5, 2000.5, 90.5, 120.5]]}}'
-
 import random
 import numpy as np
 
@@ -212,17 +196,18 @@ def submitSyntheticRequest():
     Method to create and send a synthetic request to the model
     """
 
-    myFloats = np.random.uniform(low=100.5, high=1003.3, size=(14,)).tolist()
+    randomInts = [random.randint(50,54) for i in range(4)]
 
-    record = '{"dataframe_split":{"columns":["age", "credit_card_balance", "bank_account_balance", "mortgage_balance", "sec_bank_account_balance", "savings_account_balance", "sec_savings_account_balance", "total_est_nworth", "primary_loan_balance", "secondary_loan_balance", "uni_loan_balance", "longitude", "latitude", "transaction_amount"],\
-    "data":""}}'
+    record = '{"pattern": ""}'
 
     data = json.loads(record)
-    data['dataframe_split']['data'] = [myFloats]
+
+    data["pattern"] = randomInts
+
     response = cdsw.call_model(Model_AccessKey, data)
 
     return response
 
 
-for i in range(10000):
+for i in range(10):
   submitSyntheticRequest()

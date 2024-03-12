@@ -1,8 +1,9 @@
 stumpy==1.12.0
 Faker==20.1.0
 dbldatagen==0.3.5
-jmespath==1.0.1
+jmespath==0.10.0
 pyarrow==14.0.1
 seaborn==0.13.2
 pandas==1.5.3
 apache-sedona==1.5.1
+git+https://github.com/fastforwardlabs/cmlbootstrap#egg=cmlbootstrap
