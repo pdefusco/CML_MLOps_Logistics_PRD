@@ -147,6 +147,7 @@ import cmlapi
 from src.api import ApiUtility
 import cml.data_v1 as cmldata
 from utils import IotDataGen
+import datetime
 
 #---------------------------------------------------
 #               CREATE BATCH DATA
@@ -156,6 +157,7 @@ USERNAME = os.environ["PROJECT_OWNER"]
 DBNAME = "LOGISTICS_MLOPS_DEMO"
 STORAGE = "s3a://goes-se-sandbox01"
 CONNECTION_NAME = "se-aw-mdl"
+TODAY = datetime.date.today()
 
 # Instantiate BankDataGen class
 dg = IotDataGen(USERNAME, STORAGE, DBNAME, CONNECTION_NAME)
@@ -164,50 +166,62 @@ dg = IotDataGen(USERNAME, STORAGE, DBNAME, CONNECTION_NAME)
 spark = dg.createSparkConnection()
 
 # Create IoT Fleet DF
-df = dg.dataGen(spark).toPandas()
+df_desmoines = dg.dataGen(spark)
+df_desmoines = dg.addCorrelatedColumn(df_desmoines)
+df = df_desmoines.toPandas()
 
 # You can access all models with API V2
-
 client = cmlapi.default_client()
-
 project_id = os.environ["CDSW_PROJECT_ID"]
 client.list_models(project_id)
 
 # You can use an APIV2-based utility to access the latest model's metadata. For more, explore the src folder
 apiUtil = ApiUtility()
-
-model_name = "TimeSeriesNearestNeighbor-pauldefusco-2024-03-12" # Update model name here
+model_name = f"TimeSeriesQuery-{USERNAME}-{TODAY}" # Update model name here
 
 Model_AccessKey = apiUtil.get_latest_deployment_details(model_name=model_name)["model_access_key"]
 Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]
+
+import random
+import numpy as np
+
+def submitQuery(Model_AccessKey):
+    """
+    Method to create and send a synthetic request to Time Series Query Model
+    """
+
+    randomInts = [random.randint(50,54) for i in range(4)]
+    record = '{"pattern": ""}'
+    data = json.loads(record)
+    data["pattern"] = randomInts
+    response = cdsw.call_model(Model_AccessKey, data)
+
+    return response
+
+for i in range(10):
+  submitQuery()
+
+# You can use an APIV2-based utility to access the latest model's metadata. For more, explore the src folder
+apiUtil = ApiUtility()
+model_name = f"MultiDimMotif-{USERNAME}-{TODAY}" # Update model name here
+
+Model_AccessKey = apiUtil.get_latest_deployment_details(model_name=model_name)["model_access_key"]
+Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]
+
+def submitMotifSearch(df, Model_AccessKey):
+    """
+    Method to create and send a synthetic request to Multidimensional Motif Discovery Model
+    """
+
+    record = iotDf.to_json(orient="columns")
+    response = cdsw.call_model(Model_AccessKey, record)
+
+    return response
+
+submitMotifSearch(df, Model_AccessKey
 
 # Get the various Model Endpoint details
 HOST = os.getenv("CDSW_API_URL").split(":")[0] + "://" + os.getenv("CDSW_DOMAIN")
 model_endpoint = (
     HOST.split("//")[0] + "//modelservice." + HOST.split("//")[1] + "/model"
 )
-
-import random
-import numpy as np
-
-
-def submitSyntheticRequest():
-    """
-    Method to create and send a synthetic request to the model
-    """
-
-    randomInts = [random.randint(50,54) for i in range(4)]
-
-    record = '{"pattern": ""}'
-
-    data = json.loads(record)
-
-    data["pattern"] = randomInts
-
-    response = cdsw.call_model(Model_AccessKey, data)
-
-    return response
-
-
-for i in range(10):
-  submitSyntheticRequest()

@@ -49,25 +49,29 @@ import os, json
 # `@cdsw.model_metrics` below. Don't forget to uncomment when you
 # deploy, or it won't write the metrics to the database
 
-@cdsw.model_metrics
-# This is the main function used for serving the model.
-def predict(args):
+def multiDimMotif(args):
+    """
+    Method to detect multidimensional motif
+    Returns index of multidimensional motif across all four IOT signal dimensions
+    """
 
-    iotDf = pd.read_csv("data/iot_fleet_data.csv")
+    df = pd.read_json(args)
 
-    queryDf = pd.DataFrame(data=args, dtype=np.float64)
+    m = 5
+    iotSignalDf = df[["iot_signal_1", "iot_signal_2", "iot_signal_3", "iot_signal_4"]]
 
-    distance_profile = stumpy.mass(queryDf["pattern"], iotDf["iot_signal_3"])
-    idx = np.argmin(distance_profile)
-    print(f"The nearest neighbor to `Q_df` is located at index {idx} in `T_df`")
+    iotSignalDf = iotSignalDf.astype("float64")
+    mps, indices = stumpy.mstump(iotSignalDf, m)
+
+    motifs_idx = np.argmin(mps, axis=1)
 
     # Track inputs
     cdsw.track_metric("input_data", args)
 
     # Track our prediction
-    cdsw.track_metric("nearest_neighbor", int(idx))
+    cdsw.track_metric("motif_discovered", motifs_idx)
 
-    return {"data": dict(args), "nearest_neighbor": int(idx)}
+    return {"data": args, "discovered": motifs_idx}
 
 
 # To test this in a Session, comment out the `@cdsw.model_metrics`  line,
