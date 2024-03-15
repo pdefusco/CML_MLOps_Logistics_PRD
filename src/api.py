@@ -43,8 +43,10 @@ import json
 import string
 import cmlapi
 import random
+from pprint import pprint
 import logging
 from packaging import version
+from cmlapi.rest import ApiException
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -69,8 +71,10 @@ class ApiUtility:
         client (cmlapi.api.cml_service_api.CMLServiceApi)
     """
 
-    def __init__(self):
+    def __init__(self, projectId, username):
         self.client = cmlapi.default_client()
+        self.projectId = projectId
+        self.username = username
 
     def get_latest_deployment_details_allmodels(self):
         """
@@ -190,6 +194,7 @@ class ApiUtility:
             "latest_deployment_crn": model_deployment_crn,
         }
 
+
     def get_latest_standard_runtime(self):
         """
         Use CML APIv2 to identify and return the latest version of a Python 3.6,
@@ -216,6 +221,7 @@ class ApiUtility:
         except:
             logger.info("No matching runtime available.")
             return None
+
 
     def deploy_monitoring_application(self, application_name):
         """
@@ -251,6 +257,7 @@ class ApiUtility:
         )
         logger.info(f"Created and deployed new application: {application_name}")
 
+
     def restart_running_application(self, application_name):
         """
         Use CML APIv2 to restart a running application provided the application name.
@@ -268,3 +275,66 @@ class ApiUtility:
         )
 
         logger.info(f"Restarted existing application: {application_name}")
+
+
+    def listRuntimes(self):
+        """
+        Method to list available runtimes
+        """
+
+        try:
+            # List the available runtimes, optionally filtered, sorted, and paginated.
+            api_response = self.client.list_runtimes()
+            pprint(api_response)
+        except ApiException as e:
+            print("Exception when calling CMLServiceApi->list_runtimes: %s\n" % e)
+
+        return api_response
+
+
+    def createModelBuild(self, filePath, runtimeId, functionName, modelCreationId):
+        """
+        Method to create a Model build
+        """
+
+        # Create Model Build
+        CreateModelBuildRequest = {
+                                    "runtime_identifier": runtimeId,
+                                    "model_id": modelCreationId,
+                                    "file_path": filePath,
+                                    "function_name": functionName
+                                  }
+
+        try:
+            # Create a model build.
+            api_response = self.client.create_model_build(CreateModelBuildRequest, self.projectId, modelCreationId)
+            pprint(api_response)
+        except ApiException as e:
+            print("Exception when calling CMLServiceApi->create_model_build: %s\n" % e)
+
+        return api_response
+
+
+    def createModelDeployment(self, modelBuildId, projectId, modelCreationId, cpu, memory, replicas):
+        """
+        Method to deploy a model build
+        """
+
+        CreateModelDeploymentRequest = {
+          "build_id" : modelBuildId,
+          "model_id" : modelCreationId,
+          "project_id" : projectId,
+          "cpu" : cpu,
+          "memory" : memory,
+          "replicas" : replicas,
+          "nvidia_gpus" : 0
+        }
+
+        try:
+            # Create a model deployment.
+            api_response = self.client.create_model_deployment(CreateModelDeploymentRequest, projectId, modelCreationId, modelBuildId)
+            pprint(api_response)
+        except ApiException as e:
+            print("Exception when calling CMLServiceApi->create_model_deployment: %s\n" % e)
+
+        return api_response

@@ -41,19 +41,18 @@ import cdsw, time, os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import classification_report
 import seaborn as sns
 import sqlite3
 import cmlapi
 from src.api import ApiUtility
 import datetime
 
-
 # You can access all models with API V2
 client = cmlapi.default_client()
 
 TODAY = datetime.date.today()
-model_name = f"MultiDimMotif-{USERNAME}-{TODAY}" # Update model name here
+#model_name = f"MultiDimMotif-{USERNAME}-2024-03-14" # Update model name here
+model_name = "TimeSeriesQuery-pauldefusco-2024-03-14"
 
 project_id = os.environ["CDSW_PROJECT_ID"]
 client.list_models(project_id)
@@ -64,7 +63,6 @@ apiUtil = ApiUtility()
 Model_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["model_crn"]
 Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]
 
-
 # Read in the model metrics dict
 model_metrics = cdsw.read_metrics(
     model_crn=Model_CRN, model_deployment_crn=Deployment_CRN
@@ -72,12 +70,7 @@ model_metrics = cdsw.read_metrics(
 
 # This is a handy way to unravel the dict into a big pandas dataframe
 metrics_df = pd.io.json.json_normalize(model_metrics["metrics"])
-metrics_df.tail().T
-
-# Write the data to SQL lite for visualization
-if not (os.path.exists("model_metrics.db")):
-    conn = sqlite3.connect("model_metrics.db")
-    metrics_df.to_sql(name="model_metrics", con=conn)
+metrics_df.T
 
 # Do some conversions & calculations on the raw metrics
 metrics_df["startTimeStampMs"] = pd.to_datetime(
@@ -91,3 +84,11 @@ metrics_df["processing_time"] = (
 # Create plots for different tracked metrics
 sns.set_style("whitegrid")
 sns.despine(left=True, bottom=True)
+
+# Plot processing time
+time_metrics = metrics_df.dropna(subset=["processing_time"]).sort_values(
+    "startTimeStampMs"
+)
+sns.lineplot(
+    x=range(len(metrics_df)), y="processing_time", data=metrics_df, color="grey"
+)

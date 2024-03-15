@@ -1,10 +1,8 @@
-# ###########################################################################
-#
-#  CLOUDERA APPLIED MACHINE LEARNING PROTOTYPE (AMP)
-#  (C) Cloudera, Inc. 2021
+#****************************************************************************
+# (C) Cloudera, Inc. 2020-2024
 #  All rights reserved.
 #
-#  Applicable Open Source License: Apache 2.0
+#  Applicable Open Source License: GNU Affero General Public License v3.0
 #
 #  NOTE: Cloudera open source products are modular software products
 #  made up of hundreds of individual components, each of which was
@@ -36,40 +34,39 @@
 #  BUSINESS ADVANTAGE OR UNAVAILABILITY, OR LOSS OR CORRUPTION OF
 #  DATA.
 #
-# ###########################################################################
+# #  Author(s): Paul de Fusco
+#***************************************************************************/
 
-import stumpy
-import cdsw
-import numpy as np
+from __future__ import print_function
 import pandas as pd
-import cml.data_v1 as cmldata
-import os, json
+import seaborn as sns
+import cmlapi
+from cmlapi.rest import ApiException
+from pprint import pprint
+import json, secrets, os, time, cdsw
+import mlflow
+import datetime
+from src.api import ApiUtility
 
-# *Note:* If you want to test this in a session, comment out the line
-# `@cdsw.model_metrics` below. Don't forget to uncomment when you
-# deploy, or it won't write the metrics to the database
+projectId = os.environ['CDSW_PROJECT_ID']
+username = os.environ["PROJECT_OWNER"]
+today = datetime.date.today()
+modelName = "TimeSeriesQuery-" + username + "-" + "2024-03-14"
 
-def multiDimMotif(args):
-    """
-    Method to detect multidimensional motif
-    Returns index of multidimensional motif across all four IOT signal dimensions
-    """
+apiUtil = ApiUtility(projectId, username)
 
-    iotSignalDf = pd.DataFrame.from_dict(args, orient='index')
-    #iotSignalDf = iotSignalDf.transpose()
+modelCreationId = apiUtil.get_latest_deployment_details(modelName)["model_id"]
+filePath = "tsQueryServe.py"
+runtimeId = "docker.repository.cloudera.com/cloudera/cdsw/ml-runtime-jupyterlab-python3.10-standard:2023.12.1-b8"
+functionName = "predict"
 
-    m = 4
-    iotSignalDf = iotSignalDf.astype("float64")
-    mps, indices = stumpy.mstump(iotSignalDf, m)
+createModelBuildResponse = apiUtil.createModelBuild(filePath=filePath, \
+                                                    runtimeId=runtimeId, \
+                                                    functionName=functionName, \
+                                                    modelCreationId=modelCreationId)
 
-    motifs_idx = np.argmin(mps, axis=1)
-
-    print(f"The multidimensional motif is located at indices: {motifs_idx}")
-
-    return {"data": args, "motif_discovered": motifs_idx}
-
-
-# To test this in a Session, comment out the `@cdsw.model_metrics`  line,
-# uncomment the and run the two rows below.
-#args={"pattern": [54,53,52,51]}
-#predict(args)
+cpu=4
+memory=8
+replicas=2
+newModelBuildId = createModelBuildResponse.id
+apiUtil.createModelDeployment(newModelBuildId, projectId, modelCreationId, cpu, memory, replicas)
