@@ -56,7 +56,7 @@ import datetime
 #---------------------------------------------------
 
 USERNAME = os.environ["PROJECT_OWNER"]
-DBNAME = "LOGISTICS_MLOPS_DEMO"
+DBNAME = "LOGISTICS_MLOPS_{}".format(USERNAME)
 STORAGE = "s3a://goes-se-sandbox01"
 CONNECTION_NAME = "se-aw-mdl"
 TODAY = datetime.date.today()
