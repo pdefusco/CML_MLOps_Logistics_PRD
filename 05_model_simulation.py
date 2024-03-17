@@ -57,8 +57,8 @@ import datetime
 
 USERNAME = os.environ["PROJECT_OWNER"]
 DBNAME = "LOGISTICS_MLOPS_{}".format(USERNAME)
-STORAGE = "s3a://goes-se-sandbox01"
-CONNECTION_NAME = "se-aw-mdl"
+STORAGE = "s3a://go01-demo/"
+CONNECTION_NAME = "go01-aw-dl"
 TODAY = datetime.date.today()
 
 # Instantiate BankDataGen class
@@ -78,8 +78,8 @@ project_id = os.environ["CDSW_PROJECT_ID"]
 client.list_models(project_id)
 
 # You can use an APIV2-based utility to access the latest model's metadata. For more, explore the src folder
-apiUtil = ApiUtility()
-model_name = f"TimeSeriesQuery-{USERNAME}-2024-03-14" # Update model name here
+apiUtil = ApiUtility(project_id, USERNAME)
+model_name = f"TimeSeriesQuery-{USERNAME}-2024-03-17" # Update model name here
 
 Model_AccessKey = apiUtil.get_latest_deployment_details(model_name=model_name)["model_access_key"]
 Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]
@@ -110,8 +110,8 @@ for i in range(1000):
   submitQuery(Model_AccessKey)
 
 # You can use an APIV2-based utility to access the latest model's metadata. For more, explore the src folder
-apiUtil = ApiUtility()
-model_name = f"MultiDimMotif-{USERNAME}-2024-03-14" # Update model name here
+apiUtil = ApiUtility(project_id, USERNAME)
+model_name = f"MultiDimMotif-{USERNAME}-2024-03-17" # Update model name here
 
 Model_AccessKey = apiUtil.get_latest_deployment_details(model_name=model_name)["model_access_key"]
 Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]

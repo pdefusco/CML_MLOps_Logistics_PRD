@@ -51,7 +51,7 @@ from src.api import ApiUtility
 projectId = os.environ['CDSW_PROJECT_ID']
 username = os.environ["PROJECT_OWNER"]
 today = datetime.date.today()
-modelName = "TimeSeriesQuery-" + username + "-" + "2024-03-14"
+modelName = "TimeSeriesQuery-" + username + "-" + "2024-03-17"
 
 apiUtil = ApiUtility(projectId, username)
 
