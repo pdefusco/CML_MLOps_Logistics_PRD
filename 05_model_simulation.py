@@ -57,12 +57,11 @@ import datetime
 
 USERNAME = os.environ["PROJECT_OWNER"]
 DBNAME = "LOGISTICS_MLOPS_{}".format(USERNAME)
-STORAGE = "s3a://go01-demo/"
 CONNECTION_NAME = "go01-aw-dl"
 TODAY = datetime.date.today()
 
 # Instantiate BankDataGen class
-dg = IotDataGen(USERNAME, STORAGE, DBNAME, CONNECTION_NAME)
+dg = IotDataGen(USERNAME, DBNAME, CONNECTION_NAME)
 
 # Create CML Spark Connection
 spark = dg.createSparkConnection()
@@ -79,7 +78,7 @@ client.list_models(project_id)
 
 # You can use an APIV2-based utility to access the latest model's metadata. For more, explore the src folder
 apiUtil = ApiUtility(project_id, USERNAME)
-model_name = f"TimeSeriesQuery-{USERNAME}-2024-03-17" # Update model name here
+model_name = f"TimeSeriesQuery-{USERNAME}-2024-05-28" # Update model name here
 
 Model_AccessKey = apiUtil.get_latest_deployment_details(model_name=model_name)["model_access_key"]
 Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]
@@ -111,7 +110,7 @@ for i in range(1000):
 
 # You can use an APIV2-based utility to access the latest model's metadata. For more, explore the src folder
 apiUtil = ApiUtility(project_id, USERNAME)
-model_name = f"MultiDimMotif-{USERNAME}-2024-03-17" # Update model name here
+model_name = f"MultiDimMotif-{USERNAME}-2024-05-28" # Update model name here
 
 Model_AccessKey = apiUtil.get_latest_deployment_details(model_name=model_name)["model_access_key"]
 Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]
