@@ -128,7 +128,7 @@ def submitMotifSearch(df, Model_AccessKey):
 
 for i in range(100):
     # Instantiate BankDataGen class
-    dg = IotDataGen(USERNAME, STORAGE, DBNAME, CONNECTION_NAME)
+    dg = IotDataGen(USERNAME, DBNAME, CONNECTION_NAME)
 
     # Create CML Spark Connection
     spark = dg.createSparkConnection()
