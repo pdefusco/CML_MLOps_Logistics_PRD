@@ -46,6 +46,8 @@ import sqlite3
 import cmlapi
 from src.api import ApiUtility
 import datetime
+from pandas import json_normalize
+
 
 # You can access all models with API V2
 client = cmlapi.default_client()
@@ -53,7 +55,7 @@ client = cmlapi.default_client()
 USERNAME = os.environ["PROJECT_OWNER"]
 TODAY = datetime.date.today()
 #model_name = f"MultiDimMotif-{USERNAME}-2024-03-14" # Update model name here
-model_name = "TimeSeriesQuery-pauldefusco-2024-03-17"
+model_name = "TimeSeriesQuery-pauldefusco-2024-05-29"
 
 project_id = os.environ["CDSW_PROJECT_ID"]
 client.list_models(project_id)
@@ -70,7 +72,7 @@ model_metrics = cdsw.read_metrics(
 )
 
 # This is a handy way to unravel the dict into a big pandas dataframe
-metrics_df = pd.io.json.json_normalize(model_metrics["metrics"])
+metrics_df = pd.json_normalize(model_metrics["metrics"])
 metrics_df.T
 
 # Do some conversions & calculations on the raw metrics

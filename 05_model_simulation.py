@@ -78,7 +78,7 @@ client.list_models(project_id)
 
 # You can use an APIV2-based utility to access the latest model's metadata. For more, explore the src folder
 apiUtil = ApiUtility(project_id, USERNAME)
-model_name = f"TimeSeriesQuery-{USERNAME}-2024-05-28" # Update model name here
+model_name = f"TimeSeriesQuery-{USERNAME}-2024-05-29" # Update model name here
 
 Model_AccessKey = apiUtil.get_latest_deployment_details(model_name=model_name)["model_access_key"]
 Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]
@@ -110,7 +110,7 @@ for i in range(1000):
 
 # You can use an APIV2-based utility to access the latest model's metadata. For more, explore the src folder
 apiUtil = ApiUtility(project_id, USERNAME)
-model_name = f"MultiDimMotif-{USERNAME}-2024-05-28" # Update model name here
+model_name = f"MultiDimMotif-{USERNAME}-2024-05-29" # Update model name here
 
 Model_AccessKey = apiUtil.get_latest_deployment_details(model_name=model_name)["model_access_key"]
 Deployment_CRN = apiUtil.get_latest_deployment_details(model_name=model_name)["latest_deployment_crn"]

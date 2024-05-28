@@ -51,13 +51,13 @@ from src.api import ApiUtility
 projectId = os.environ['CDSW_PROJECT_ID']
 username = os.environ["PROJECT_OWNER"]
 today = datetime.date.today()
-modelName = "TimeSeriesQuery-" + username + "-" + "2024-03-17"
+modelName = "TimeSeriesQuery-" + username + "-" + "2024-05-29"
 
 apiUtil = ApiUtility(projectId, username)
 
 modelCreationId = apiUtil.get_latest_deployment_details(modelName)["model_id"]
 filePath = "tsQueryServe.py"
-runtimeId = "docker.repository.cloudera.com/cloudera/cdsw/ml-runtime-jupyterlab-python3.10-standard:2023.12.1-b8"
+runtimeId = "docker.repository.cloudera.com/cloudera/cdsw/ml-runtime-workbench-python3.9-standard:2024.02.1-b4"
 functionName = "predict"
 
 createModelBuildResponse = apiUtil.createModelBuild(filePath=filePath, \
