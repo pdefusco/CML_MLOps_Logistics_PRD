@@ -49,7 +49,7 @@ import datetime
 from src.api import ApiUtility
 
 projectId = os.environ['CDSW_PROJECT_ID']
-username = os.environ["PROJECT_OWNER"]
+username = os.environ["PROJECT_USER"]
 today = datetime.date.today()
 modelName = "TimeSeriesQuery-" + username + "-" + "2024-05-29"
 
